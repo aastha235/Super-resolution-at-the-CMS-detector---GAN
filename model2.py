@@ -8,12 +8,9 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 
-# =========================
-# CONFIG
-# =========================
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 8
-EPOCHS = 10   # 5–10 recommended
+EPOCHS = 10   
 
 TRAIN_FILES = [
     "F:\\jet0run0\\run_1_chunk_0.pt",
@@ -25,9 +22,7 @@ TRAIN_FILES = [
 
 print("DEVICE:", DEVICE)
 
-# =========================
-# DATASET
-# =========================
+
 class JetDataset(Dataset):
     def __init__(self, file):
         data = torch.load(file, weights_only=True)
@@ -102,9 +97,6 @@ class Discriminator(nn.Module):
         lr = F.interpolate(lr, size=(125,125))
         return self.model(torch.cat([lr, hr], dim=1))
 
-# =========================
-# INIT
-# =========================
 G = Generator().to(DEVICE)
 D = Discriminator().to(DEVICE)
 
@@ -114,9 +106,7 @@ opt_D = torch.optim.Adam(D.parameters(), lr=5e-5, betas=(0.5, 0.999))
 L1 = nn.L1Loss()
 BCE = nn.BCEWithLogitsLoss()
 
-# =========================
-# VISUALIZATION
-# =========================
+
 def visualize(G, loader, epoch):
     lr, hr = next(iter(loader))
     lr, hr = lr.to(DEVICE), hr.to(DEVICE)
@@ -136,13 +126,9 @@ def visualize(G, loader, epoch):
     plt.savefig(f"epoch_3_{epoch}.png")
     plt.close()
 
-# =========================
-# TRAIN STEP
-# =========================
 def train_step(lr, hr):
     lr, hr = lr.to(DEVICE), hr.to(DEVICE)
 
-    # ---- Train D ----
     fake = G(lr).detach()
     loss_D = (
         BCE(D(lr, hr), torch.ones_like(D(lr, hr))) +
@@ -152,8 +138,6 @@ def train_step(lr, hr):
     opt_D.zero_grad()
     loss_D.backward()
     opt_D.step()
-
-    # ---- Train G twice ----
     for _ in range(2):
         fake = G(lr)
         loss_G = (
@@ -167,9 +151,7 @@ def train_step(lr, hr):
 
     return loss_G.item(), loss_D.item()
 
-# =========================
-# TRAIN LOOP + SAVE
-# =========================
+
 for epoch in range(EPOCHS):
     print(f"\nEpoch {epoch+1}")
     start_time=time.time()
@@ -184,7 +166,7 @@ for epoch in range(EPOCHS):
     
     visualize(G, loader, epoch+1)
 
-    # 🔥 SAVE EACH EPOCH
+    
     torch.save(G.state_dict(), f"generator_3_epoch_{epoch+1}.pth")
     end_time=time.time()
     print(f"Total time : {end_time-start_time}")
@@ -216,9 +198,6 @@ plt.close()
 
 print("Evaluation done!")
 
-# =========================
-# MULTIPLE SAMPLE VISUALIZATION
-# =========================
 print("\nGenerating multiple samples...")
 
 def visualize_multiple(G, loader, num_samples=5):
