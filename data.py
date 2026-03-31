@@ -10,8 +10,8 @@ print(type(row["X_jets_LR"][0][0]))
 
 lr = row["X_jets_LR"]
 
-print("Level 1:", len(lr))             # should be 3
-print("Level 2:", len(lr[0]))          # you saw 64
+print("Level 1:", len(lr))             
+print("Level 2:", len(lr[0]))       
 print("Level 3 type:", type(lr[0][0]))
 
 hr = row["X_jets"]
@@ -21,8 +21,8 @@ print(type(row["X_jets"][0][0]))
 
 hr = row["X_jets"]
 
-print("Level 1:", len(hr))             # should be 3
-print("Level 2:", len(hr[0]))          # you saw 64
+print("Level 1:", len(hr))          
+print("Level 2:", len(hr[0]))          
 print("Level 3 type:", type(hr[0][0]))
 
 
