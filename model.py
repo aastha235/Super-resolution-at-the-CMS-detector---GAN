@@ -37,7 +37,7 @@ class JetDataset(Dataset):
         lr = self.lr[idx]
         hr = self.hr[idx]
 
-        # 🔥 per-sample normalization (IMPORTANT)
+        #per-sample normalization
         scale = hr.max()
         lr = lr / (scale + 1e-8)
         hr = hr / (scale + 1e-8)
@@ -49,7 +49,7 @@ def get_loader(file):
     return DataLoader(JetDataset(file), batch_size=BATCH_SIZE, shuffle=True)
 
 # =========================
-# UNET GENERATOR (FIXED)
+# UNET GENERATOR
 # =========================
 class Generator(nn.Module):
     def __init__(self):
@@ -105,13 +105,10 @@ class Discriminator(nn.Module):
         x = torch.cat([lr, hr], dim=1)
         return self.model(x)
 
-# =========================
-# INIT
-# =========================
+
 G = Generator().to(DEVICE)
 D = Discriminator().to(DEVICE)
 
-# 🔥 weaker discriminator
 opt_G = torch.optim.Adam(G.parameters(), lr=2e-4, betas=(0.5, 0.999))
 opt_D = torch.optim.Adam(D.parameters(), lr=1e-4, betas=(0.5, 0.999))
 
@@ -149,13 +146,11 @@ def visualize(G, loader, epoch):
     plt.savefig(f"epoch_{epoch}.png")
     plt.close()
 
-# =========================
-# TRAIN STEP
-# =========================
+
 def train_step(lr, hr):
     lr, hr = lr.to(DEVICE), hr.to(DEVICE)
 
-    # ---- Train D ----
+    
     fake = G(lr).detach()
     real_pred = D(lr, hr)
     fake_pred = D(lr, fake)
@@ -169,7 +164,6 @@ def train_step(lr, hr):
     loss_D.backward()
     opt_D.step()
 
-    # ---- Train G (twice) ----
     for _ in range(2):
         fake = G(lr)
         fake_pred = D(lr, fake)
@@ -185,9 +179,7 @@ def train_step(lr, hr):
 
     return loss_G.item(), loss_D.item()
 
-# =========================
-# TRAIN LOOP
-# =========================
+
 for epoch in range(EPOCHS):
     print(f"\nEpoch {epoch+1}")
 
@@ -202,8 +194,5 @@ for epoch in range(EPOCHS):
 
     visualize(G, loader, epoch+1)
 
-# =========================
-# SAVE
-# =========================
 torch.save(G.state_dict(), "generator_fixed.pth")
 print("DONE")
